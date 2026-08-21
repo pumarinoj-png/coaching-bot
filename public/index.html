@@ -619,42 +619,29 @@ INSTRUCCIONES:
             document.getElementById('screen-palancas').classList.remove('active');
             document.getElementById('screen-chat').classList.add('active');
 
-            // Agregar primer mensaje del coach
+            // Limpiar chat
             const chatBox = document.getElementById('chat-messages');
             chatBox.innerHTML = '';
 
-            let mensajeInicial = '';
-            
-            if (key === 'test') {
-                mensajeInicial = 'Perfecto. Voy a hacerte un par de preguntas para encontrar la palanca correcta por dónde partir. Vamos allá:';
-            } else {
-                // Encontrar el nombre de la palanca
-                let nombrePalanca = key;
-                for (const grupo of Object.values(GRUPOS_PALANCAS)) {
-                    const palanca = grupo.palancas.find(p => p.id === key);
-                    if (palanca) {
-                        nombrePalanca = palanca.nombre;
-                        break;
-                    }
-                }
-                mensajeInicial = `Hola, empecemos con <strong>${nombrePalanca}</strong>. Mi objetivo es ayudarte a identificar una situación real y llegaremos a una acción concreta. ¿Preparado?`;
-            }
+            // Mostrar indicador de carga mientras el coach prepara su primer mensaje
+            const loading = document.createElement('div');
+            loading.className = 'message assistant';
+            loading.innerHTML = `<div class="loading"><span></span><span></span><span></span></div>`;
+            chatBox.appendChild(loading);
 
-            const msgInicial = document.createElement('div');
-            msgInicial.className = 'message assistant';
-            msgInicial.innerHTML = `<div class="message-content">${mensajeInicial}</div>`;
-            chatBox.appendChild(msgInicial);
-
-            // Agregar al historial
+            // IMPORTANTE: la API de Claude requiere que la conversación
+            // empiece y termine en un mensaje "user". Por eso el primer
+            // mensaje que enviamos es un "user" invisible que dispara
+            // la primera pregunta real del coach (generada por Claude,
+            // no hardcodeada).
             estadoActual.mensajes.push({
-                role: 'assistant',
-                content: mensajeInicial.replace(/<[^>]*>/g, '') // Remover HTML para el historial
+                role: 'user',
+                content: 'Hola, quiero empezar el coaching.'
             });
 
-            // Obtener primera pregunta del coach
-            setTimeout(() => {
-                obtenerRespuestaCoach('');
-            }, 800);
+            await obtenerRespuestaCoach('');
+
+            loading.remove();
         }
 
         // ENVIAR MENSAJE
