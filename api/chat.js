@@ -180,7 +180,10 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const respuesta = data.content[0]?.text || 'Sin respuesta del coach';
+    
+    // Buscar el bloque de texto (puede haber bloques 'thinking' antes)
+    const textBlock = data.content.find(block => block.type === 'text');
+    const respuesta = textBlock?.text || 'Sin respuesta del coach';
 
     return res.status(200).json({
       respuesta,
