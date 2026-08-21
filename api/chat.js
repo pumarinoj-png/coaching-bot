@@ -6,7 +6,7 @@
 // MANTÉN LOS NOMBRES DE LAS LLAVES (eliminar, priorizar, etc)
 // ============================================================
 
-const CLAUDE_MODEL = "claude-opus-4-6";
+const CLAUDE_MODEL = "claude-3-5-sonnet-20241022";
 const API_URL = "https://api.anthropic.com/v1/messages";
 
 // ============================================================
