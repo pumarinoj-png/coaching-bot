@@ -1,6 +1,5 @@
 {
   "buildCommand": "echo 'No build needed'",
-  "env": ["CLAUDE_API_KEY"],
   "regions": ["sfo1"],
   "functions": {
     "api/chat.js": {
