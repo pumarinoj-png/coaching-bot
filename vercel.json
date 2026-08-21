@@ -1,6 +1,6 @@
 {
   "buildCommand": "echo 'No build needed'",
-  "regions": ["sfo1"],
+  "publicDirectory": ".",
   "functions": {
     "api/chat.js": {
       "memory": 512,
@@ -8,4 +8,3 @@
     }
   }
 }
-
