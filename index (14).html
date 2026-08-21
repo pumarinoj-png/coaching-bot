@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach IA - Libera Tu Tiempo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 90vh;
+            max-height: 800px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* PANTALLA DE PALANCAS */
+        .screen {
+            display: none;
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .palancas-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .palanca-btn {
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+
+        .palanca-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+
+        .palanca-btn strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .palanca-btn small {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        /* PANTALLA DE CHAT */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #fafafa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .message.assistant .message-content {
+            background: white;
+            border-left: 3px solid #667eea;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .loading {
+            display: flex;
+            gap: 4px;
+            padding: 12px 15px;
+        }
+
+        .loading span {
+            width: 8px;
+            height: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            animation: bounce 1.4s infinite;
+        }
+
+        .loading span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                opacity: 0.3;
+                transform: scale(1);
+            }
+            40% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+        }
+
+        /* ENTRADA */
+        .input-area {
+            border-top: 1px solid #e0e0e0;
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+            background: white;
+        }
+
+        .input-area input {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .input-area input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-area button {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+
+        .input-area button:hover {
+            background: #764ba2;
+        }
+
+        .input-area button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .back-btn {
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: #e0e0e0;
+        }
+
+        /* RESUMEN FINAL */
+        .summary-screen {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .summary-screen h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .summary-screen p {
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 20px;
+        }
+
+        .summary-screen button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .summary-screen button:hover {
+            background: #764ba2;
+        }
+
+        .error-message {
+            background: #fee;
+            color: #c00;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Coach IA</h1>
+            <p>Libera tiempo para lo importante</p>
+        </div>
+
+        <!-- PANTALLA 1: SELECCIONAR PALANCA -->
+        <div class="screen active" id="screen-palancas">
+            <h2 style="margin-bottom: 20px; color: #333;">¿Qué deseas evaluar para liberar más tiempo?</h2>
+            <div class="palancas-grid" id="palancas-grid"></div>
+        </div>
+
+        <!-- PANTALLA 2: CHAT -->
+        <div class="screen" id="screen-chat">
+            <button class="back-btn" onclick="volverAlInicio()">← Volver</button>
+            <div class="chat-messages" id="chat-messages"></div>
+            <div class="input-area">
+                <input 
+                    type="text" 
+                    id="input-texto" 
+                    placeholder="Escribe tu respuesta..."
+                    onkeypress="if(event.key==='Enter') enviarMensaje()"
+                >
+                <button onclick="enviarMensaje()" id="btn-enviar">Enviar</button>
+            </div>
+        </div>
+
+        <!-- PANTALLA 3: RESUMEN -->
+        <div class="screen" id="screen-summary">
+            <div class="summary-screen">
+                <h2>✓ Coaching Completado</h2>
+                <p id="summary-text"></p>
+                <button onclick="volverAlInicio()">Hacer otro coaching</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATOS DE PALANCAS
+        const PALANCAS = {
+            eliminar: {
+                nombre: "Eliminar",
+                descripcion: "Cuestiona si actividades realmente necesitan existir",
+                icon: "🗑️"
+            },
+            priorizar: {
+                nombre: "Priorizar",
+                descripcion: "Distingue urgente de importante",
+                icon: "⚡"
+            },
+            delegar: {
+                nombre: "Delegar",
+                descripcion: "Transfiere responsabilidad real al equipo",
+                icon: "🤝"
+            },
+            autonomia: {
+                nombre: "Autonomía",
+                descripcion: "Reduce dependencia en decisiones",
+                icon: "🦸"
+            },
+            criterios: {
+                nombre: "Criterios",
+                descripcion: "Haz explícito cómo decides",
+                icon: "🎯"
+            },
+            roles: {
+                nombre: "Roles",
+                descripcion: "Clarifica quién decide y ejecuta",
+                icon: "👥"
+            },
+            desarrollo: {
+                nombre: "Desarrollo",
+                descripcion: "Convierte problemas en aprendizaje",
+                icon: "📈"
+            },
+            sobrecarga: {
+                nombre: "Sobreintervención",
+                descripcion: "Evita intervenir después de delegar",
+                icon: "⏸️"
+            },
+            sistematizar: {
+                nombre: "Sistematizar",
+                descripcion: "Transforma soluciones repetitivas en procesos",
+                icon: "⚙️"
+            },
+            seguimiento: {
+                nombre: "Seguimiento",
+                descripcion: "Diseña mecanismos sin perseguir info",
+                icon: "📊"
+            }
+        };
+
+        // ESTADO GLOBAL
+        let estadoActual = {
+            palancaSeleccionada: null,
+            mensajes: [],
+            conteoMensajes: 0
+        };
+
+        // INICIALIZAR
+        document.addEventListener('DOMContentLoaded', () => {
+            mostrarPalancas();
+        });
+
+        // MOSTRAR PALANCAS
+        function mostrarPalancas() {
+            const grid = document.getElementById('palancas-grid');
+            grid.innerHTML = '';
+            
+            Object.entries(PALANCAS).forEach(([key, palanca]) => {
+                const btn = document.createElement('button');
+                btn.className = 'palanca-btn';
+                btn.innerHTML = `
+                    <strong>${palanca.icon} ${palanca.nombre}</strong>
+                    <small>${palanca.descripcion}</small>
+                `;
+                btn.onclick = () => seleccionarPalanca(key);
+                grid.appendChild(btn);
+            });
+        }
+
+        // SELECCIONAR PALANCA
+        async function seleccionarPalanca(key) {
+            estadoActual.palancaSeleccionada = key;
+            estadoActual.mensajes = [];
+            estadoActual.conteoMensajes = 0;
+
+            // Cambiar pantalla
+            document.getElementById('screen-palancas').classList.remove('active');
+            document.getElementById('screen-chat').classList.add('active');
+
+            // Agregar primer mensaje del coach
+            const chatBox = document.getElementById('chat-messages');
+            chatBox.innerHTML = '';
+
+            const msgInicial = document.createElement('div');
+            msgInicial.className = 'message assistant';
+            msgInicial.innerHTML = `
+                <div class="message-content">
+                    Hola, empecemos con <strong>${PALANCAS[key].nombre}</strong>. 
+                    Mi objetivo es ayudarte a identificar una situación real y llegaremos a una acción concreta. 
+                    ¿Preparado?
+                </div>
+            `;
+            chatBox.appendChild(msgInicial);
+
+            // Agregar al historial
+            estadoActual.mensajes.push({
+                role: 'assistant',
+                content: `Hola, empecemos con ${PALANCAS[key].nombre}. Mi objetivo es ayudarte a identificar una situación real y llegaremos a una acción concreta. ¿Preparado?`
+            });
+
+            // Obtener primera pregunta del coach
+            setTimeout(() => {
+                obtenerRespuestaCoach('');
+            }, 800);
+        }
+
+        // ENVIAR MENSAJE
+        async function enviarMensaje() {
+            const input = document.getElementById('input-texto');
+            const texto = input.value.trim();
+
+            if (!texto) return;
+
+            // Mostrar mensaje del usuario
+            const chatBox = document.getElementById('chat-messages');
+            const msgUsuario = document.createElement('div');
+            msgUsuario.className = 'message user';
+            msgUsuario.innerHTML = `<div class="message-content">${texto}</div>`;
+            chatBox.appendChild(msgUsuario);
+
+            // Agregar al historial
+            estadoActual.mensajes.push({
+                role: 'user',
+                content: texto
+            });
+
+            estadoActual.conteoMensajes++;
+
+            // Limpiar input
+            input.value = '';
+            input.focus();
+
+            // Desplazar al final
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Mostrar indicador de carga
+            const loading = document.createElement('div');
+            loading.className = 'message assistant';
+            loading.innerHTML = `<div class="loading"><span></span><span></span><span></span></div>`;
+            chatBox.appendChild(loading);
+
+            // Obtener respuesta
+            await obtenerRespuestaCoach(texto);
+
+            // Remover loading
+            loading.remove();
+        }
+
+        // OBTENER RESPUESTA DEL COACH
+        async function obtenerRespuestaCoach(mensajeUsuario) {
+            try {
+                document.getElementById('btn-enviar').disabled = true;
+
+                const respuesta = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        palanca: estadoActual.palancaSeleccionada,
+                        mensajes: estadoActual.mensajes,
+                        conteoMensajes: estadoActual.conteoMensajes
+                    })
+                });
+
+                if (!respuesta.ok) {
+                    throw new Error(`Error: ${respuesta.status}`);
+                }
+
+                const datos = await respuesta.json();
+
+                if (datos.error) {
+                    mostrarError(datos.error);
+                    document.getElementById('btn-enviar').disabled = false;
+                    return;
+                }
+
+                // Agregar respuesta al historial
+                estadoActual.mensajes.push({
+                    role: 'assistant',
+                    content: datos.respuesta
+                });
+
+                // Mostrar respuesta
+                const chatBox = document.getElementById('chat-messages');
+                const msgCoach = document.createElement('div');
+                msgCoach.className = 'message assistant';
+                msgCoach.innerHTML = `<div class="message-content">${datos.respuesta}</div>`;
+                chatBox.appendChild(msgCoach);
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Si es la última iteración, mostrar resumen
+                if (datos.finalizador && datos.conteoMensajes >= 6) {
+                    setTimeout(() => {
+                        mostrarResumen();
+                    }, 1500);
+                }
+
+                document.getElementById('btn-enviar').disabled = false;
+                document.getElementById('input-texto').focus();
+
+            } catch (error) {
+                mostrarError('Error de conexión. Intenta nuevamente.');
+                console.error(error);
+                document.getElementById('btn-enviar').disabled = false;
+            }
+        }
+
+        // MOSTRAR ERROR
+        function mostrarError(msg) {
+            const chatBox = document.getElementById('chat-messages');
+            const error = document.createElement('div');
+            error.className = 'error-message';
+            error.textContent = msg;
+            chatBox.appendChild(error);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // MOSTRAR RESUMEN
+        function mostrarResumen() {
+            document.getElementById('screen-chat').classList.remove('active');
+            document.getElementById('screen-summary').classList.add('active');
+
+            const palanca = PALANCAS[estadoActual.palancaSeleccionada];
+            document.getElementById('summary-text').innerHTML = `
+                Hemos explorado <strong>${palanca.nombre}</strong> contigo y llegamos a acciones concretas.
+                <br><br>
+                Recuerda: el objetivo es implementar lo que decidimos en tu día a día.
+            `;
+        }
+
+        // VOLVER AL INICIO
+        function volverAlInicio() {
+            document.getElementById('screen-palancas').classList.add('active');
+            document.getElementById('screen-chat').classList.remove('active');
+            document.getElementById('screen-summary').classList.remove('active');
+            estadoActual = {
+                palancaSeleccionada: null,
+                mensajes: [],
+                conteoMensajes: 0
+            };
+        }
+    </script>
+</body>
+</html>
