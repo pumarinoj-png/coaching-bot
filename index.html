@@ -64,17 +64,33 @@
             flex-direction: column;
         }
 
+        /* GRUPOS DE PALANCAS */
+        .grupo-palancas {
+            margin-bottom: 25px;
+        }
+
+        .grupo-titulo {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #667eea;
+        }
+
         .palancas-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 12px;
+            gap: 10px;
         }
 
         .palanca-btn {
             background: #f5f5f5;
             border: 2px solid #e0e0e0;
             border-radius: 8px;
-            padding: 15px;
+            padding: 13px;
             cursor: pointer;
             text-align: left;
             transition: all 0.3s ease;
@@ -89,8 +105,8 @@
 
         .palanca-btn strong {
             display: block;
-            font-size: 16px;
-            margin-bottom: 5px;
+            font-size: 15px;
+            margin-bottom: 4px;
         }
 
         .palanca-btn small {
@@ -325,57 +341,197 @@
     </div>
 
     <script>
-        // DATOS DE PALANCAS
-        const PALANCAS = {
-            eliminar: {
-                nombre: "Eliminar",
-                descripcion: "Cuestiona si actividades realmente necesitan existir",
-                icon: "🗑️"
+        // ============================================================
+        // SECCIÓN DE PROMPTS - FÁCIL DE EDITAR
+        // ============================================================
+        // Edita estos prompts para cambiar cómo el coach se comporta
+        // Cada prompt es la instrucción base para el coach
+        
+        const PROMPTS_COACH = {
+            delegar: `Eres un coach ejecutivo especializado en liderazgo. El participante ha elegido "Delegar".
+
+Tu objetivo: Encontrar algo que el líder hace y podría estar en manos de otra persona, transfiriendo responsabilidad real.
+
+INSTRUCCIONES:
+- Una pregunta a la vez, adapta según sus respuestas
+- Indaga qué hace el líder que otro podría asumir
+- Distingue: ¿falta capacidad o falta confianza?
+- Tono: ejecutivo, directo, SIN terapéutico
+- Cuando cierre, termina con: "COMPROMISO: [qué delegará a quién, cuándo]"`,
+
+            autonomia: `Eres un coach ejecutivo. El participante ha elegido "Dar Autonomía".
+
+Tu objetivo: Detectar dónde existe dependencia innecesaria del líder en decisiones.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Identifica qué decisiones llegan innecesariamente
+- Ayuda a transferir autoridad de decisión
+- Tono: ejecutivo, directo
+- Cuando cierre, termina con: "COMPROMISO: [qué decisión transferirá, cuándo]"`,
+
+            sobrecarga: `Eres un coach ejecutivo. El participante ha elegido "Evitar Sobreintervención".
+
+Tu objetivo: Identificar cuándo el líder interviene después de delegar, reduciendo autonomía.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Busca la brecha entre delegar e intervenir constantemente
+- Desafía el perfeccionismo que lleva a controlar
+- Tono: ejecutivo, desafiante pero sin juzgar
+- Cuando cierre, termina con: "COMPROMISO: [en qué NO intervendrá, cuándo]"`,
+
+            priorizar: `Eres un coach ejecutivo. El participante ha elegido "Priorizar".
+
+Tu objetivo: Distinguir entre urgente, importante y lo que requiere su intervención como líder.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Indaga en su agenda real
+- Identifica qué importante está siendo desplazado por lo urgente
+- Tono: ejecutivo, sin sermones
+- Cuando cierre, termina con: "COMPROMISO: [qué eliminará/delegará, cuándo]"`,
+
+            eliminar: `Eres un coach ejecutivo. El participante ha elegido "Eliminar".
+
+Tu objetivo: Ayudarlo a cuestionar si una actividad realmente debe hacerse.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Indaga en su realidad, no expliques conceptos
+- Cuando proponga algo genérico, presiona: "¿Qué significa concretamente?"
+- Tono: directo, orientado a la acción
+- Cuando cierre, termina con: "COMPROMISO: [qué eliminará, cuándo probará]"`,
+
+            sistematizar: `Eres un coach ejecutivo. El participante ha elegido "Sistematizar".
+
+Tu objetivo: Transformar soluciones repetitivas en procesos o estándares.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Identifica problemas recurrentes
+- Ayuda a crear un estándar o protocolo
+- Tono: práctico, orientado a resultados
+- Cuando cierre, termina con: "COMPROMISO: [qué estándar/protocolo creará, cuándo]"`,
+
+            criterios: `Eres un coach ejecutivo. El participante ha elegido "Aclarar Criterios y Roles".
+
+Tu objetivo: Hacer explícitos los criterios con los que el líder decide, para que el equipo pueda resolverlas sin consultarle.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Identifica qué decisiones se repiten
+- Saca a la luz el criterio tácito que usa
+- Tono: directo, enfocado en lo observable
+- Cuando cierre, termina con: "COMPROMISO: [qué criterio explicará, a quién, cuándo]"`,
+
+            desarrollo: `Eres un coach ejecutivo. El participante ha elegido "Desarrollar al Equipo".
+
+Tu objetivo: Identificar problemas que el líder resuelve repetidamente y transformarlos en aprendizaje.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Busca patrones: ¿qué problema resuelve repetidamente?
+- Identifica qué podría aprender la persona
+- Tono: ejecutivo, no te quedes en empatía
+- Cuando cierre, termina con: "COMPROMISO: [qué conversación tendrá, con quién, cuándo]"`,
+
+            seguimiento: `Eres un coach ejecutivo. El participante ha elegido "Crear Mecanismos de Seguimiento".
+
+Tu objetivo: Diseñar mecanismos que hagan visible el avance sin que el líder persiga información.
+
+INSTRUCCIONES:
+- Una pregunta a la vez
+- Identifica qué cosas persigue constantemente
+- Ayuda a diseñar un mecanismo de visibilidad
+- Tono: ejecutivo, práctico
+- Cuando cierre, termina con: "COMPROMISO: [qué mecanismo implementará, cuándo]"`,
+
+            test: `Eres un coach ejecutivo. El participante NO sabe cuál palanca elegir.
+
+Tu objetivo: Hacer UN cuestionario breve (máximo 2-3 preguntas) para que identifique por dónde partir.
+
+INSTRUCCIONES:
+- Haz UNA pregunta a la vez
+- Escucha bien y sugiere una palanca específica basada en su respuesta
+- Cuando sugieras una palanca, termina con: "RECOMENDACIÓN: Te sugiero empezar con [PALANCA] porque..."
+- Luego el sistema automáticamente iniciará esa palanca`
+        };
+
+        // ============================================================
+        // DATOS DE PALANCAS AGRUPADAS
+        // ============================================================
+        // No necesitas editar esto, solo agrégalo en la UI
+        
+        const GRUPOS_PALANCAS = {
+            soltar: {
+                titulo: "SOLTAR - Reduce lo que solo tú haces",
+                palancas: [
+                    {
+                        id: "delegar",
+                        nombre: "Delegar",
+                        descripcion: "Transfiere responsabilidad real al equipo",
+                        icon: "🤝"
+                    },
+                    {
+                        id: "autonomia",
+                        nombre: "Dar Autonomía",
+                        descripcion: "Reduce dependencia en decisiones",
+                        icon: "🦸"
+                    },
+                    {
+                        id: "sobrecarga",
+                        nombre: "Evitar Sobreintervención",
+                        descripcion: "Deja que otros hagan a su manera",
+                        icon: "⏸️"
+                    }
+                ]
             },
-            priorizar: {
-                nombre: "Priorizar",
-                descripcion: "Distingue urgente de importante",
-                icon: "⚡"
+            enfocar: {
+                titulo: "ENFOCAR - Dedícate a lo que importa",
+                palancas: [
+                    {
+                        id: "priorizar",
+                        nombre: "Priorizar",
+                        descripcion: "Distingue urgente de importante",
+                        icon: "⚡"
+                    },
+                    {
+                        id: "eliminar",
+                        nombre: "Eliminar",
+                        descripcion: "Cuestiona actividades que no aportan",
+                        icon: "🗑️"
+                    },
+                    {
+                        id: "sistematizar",
+                        nombre: "Sistematizar",
+                        descripcion: "Convierte lo repetitivo en procesos",
+                        icon: "⚙️"
+                    }
+                ]
             },
-            delegar: {
-                nombre: "Delegar",
-                descripcion: "Transfiere responsabilidad real al equipo",
-                icon: "🤝"
-            },
-            autonomia: {
-                nombre: "Autonomía",
-                descripcion: "Reduce dependencia en decisiones",
-                icon: "🦸"
-            },
-            criterios: {
-                nombre: "Criterios",
-                descripcion: "Haz explícito cómo decides",
-                icon: "🎯"
-            },
-            roles: {
-                nombre: "Roles",
-                descripcion: "Clarifica quién decide y ejecuta",
-                icon: "👥"
-            },
-            desarrollo: {
-                nombre: "Desarrollo",
-                descripcion: "Convierte problemas en aprendizaje",
-                icon: "📈"
-            },
-            sobrecarga: {
-                nombre: "Sobreintervención",
-                descripcion: "Evita intervenir después de delegar",
-                icon: "⏸️"
-            },
-            sistematizar: {
-                nombre: "Sistematizar",
-                descripcion: "Transforma soluciones repetitivas en procesos",
-                icon: "⚙️"
-            },
-            seguimiento: {
-                nombre: "Seguimiento",
-                descripcion: "Diseña mecanismos sin perseguir info",
-                icon: "📊"
+            habilitar: {
+                titulo: "HABILITAR - Multiplica capacidad del equipo",
+                palancas: [
+                    {
+                        id: "criterios",
+                        nombre: "Aclarar Criterios y Roles",
+                        descripcion: "Haz explícito cómo decides",
+                        icon: "🎯"
+                    },
+                    {
+                        id: "desarrollo",
+                        nombre: "Desarrollar al Equipo",
+                        descripcion: "Convierte problemas en aprendizaje",
+                        icon: "📈"
+                    },
+                    {
+                        id: "seguimiento",
+                        nombre: "Mecanismos de Seguimiento",
+                        descripcion: "Visualiza sin perseguir información",
+                        icon: "📊"
+                    }
+                ]
             }
         };
 
@@ -391,21 +547,66 @@
             mostrarPalancas();
         });
 
-        // MOSTRAR PALANCAS
+        // MOSTRAR PALANCAS CON GRUPOS
         function mostrarPalancas() {
-            const grid = document.getElementById('palancas-grid');
-            grid.innerHTML = '';
+            const screenPalancas = document.getElementById('screen-palancas');
             
-            Object.entries(PALANCAS).forEach(([key, palanca]) => {
-                const btn = document.createElement('button');
-                btn.className = 'palanca-btn';
-                btn.innerHTML = `
-                    <strong>${palanca.icon} ${palanca.nombre}</strong>
-                    <small>${palanca.descripcion}</small>
-                `;
-                btn.onclick = () => seleccionarPalanca(key);
-                grid.appendChild(btn);
+            // Limpiar y recrear título
+            screenPalancas.innerHTML = '<h2 style="margin-bottom: 20px; color: #333;">¿Qué deseas evaluar para liberar más tiempo?</h2>';
+            
+            // Mostrar cada grupo
+            Object.entries(GRUPOS_PALANCAS).forEach(([groupKey, grupo]) => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'grupo-palancas';
+                
+                const titulo = document.createElement('div');
+                titulo.className = 'grupo-titulo';
+                titulo.textContent = grupo.titulo;
+                groupDiv.appendChild(titulo);
+                
+                const grid = document.createElement('div');
+                grid.className = 'palancas-grid';
+                
+                grupo.palancas.forEach(palanca => {
+                    const btn = document.createElement('button');
+                    btn.className = 'palanca-btn';
+                    btn.innerHTML = `
+                        <strong>${palanca.icon} ${palanca.nombre}</strong>
+                        <small>${palanca.descripcion}</small>
+                    `;
+                    btn.onclick = () => seleccionarPalanca(palanca.id);
+                    grid.appendChild(btn);
+                });
+                
+                groupDiv.appendChild(grid);
+                screenPalancas.appendChild(groupDiv);
             });
+            
+            // Agregar opción "No sé cuál elegir"
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'grupo-palancas';
+            
+            const titulo = document.createElement('div');
+            titulo.className = 'grupo-titulo';
+            titulo.textContent = '¿INDECISO?';
+            groupDiv.appendChild(titulo);
+            
+            const grid = document.createElement('div');
+            grid.className = 'palancas-grid';
+            
+            const btn = document.createElement('button');
+            btn.className = 'palanca-btn';
+            btn.style.background = '#fff3cd';
+            btn.style.borderColor = '#ffc107';
+            btn.innerHTML = `
+                <strong>❓ No sé cuál elegir</strong>
+                <small>Te ayudaré a encontrar la palanca correcta</small>
+            `;
+            btn.onclick = () => seleccionarPalanca('test');
+            grid.appendChild(btn);
+            
+            groupDiv.appendChild(grid);
+            screenPalancas.appendChild(groupDiv);
         }
 
         // SELECCIONAR PALANCA
@@ -422,21 +623,32 @@
             const chatBox = document.getElementById('chat-messages');
             chatBox.innerHTML = '';
 
+            let mensajeInicial = '';
+            
+            if (key === 'test') {
+                mensajeInicial = 'Perfecto. Voy a hacerte un par de preguntas para encontrar la palanca correcta por dónde partir. Vamos allá:';
+            } else {
+                // Encontrar el nombre de la palanca
+                let nombrePalanca = key;
+                for (const grupo of Object.values(GRUPOS_PALANCAS)) {
+                    const palanca = grupo.palancas.find(p => p.id === key);
+                    if (palanca) {
+                        nombrePalanca = palanca.nombre;
+                        break;
+                    }
+                }
+                mensajeInicial = `Hola, empecemos con <strong>${nombrePalanca}</strong>. Mi objetivo es ayudarte a identificar una situación real y llegaremos a una acción concreta. ¿Preparado?`;
+            }
+
             const msgInicial = document.createElement('div');
             msgInicial.className = 'message assistant';
-            msgInicial.innerHTML = `
-                <div class="message-content">
-                    Hola, empecemos con <strong>${PALANCAS[key].nombre}</strong>. 
-                    Mi objetivo es ayudarte a identificar una situación real y llegaremos a una acción concreta. 
-                    ¿Preparado?
-                </div>
-            `;
+            msgInicial.innerHTML = `<div class="message-content">${mensajeInicial}</div>`;
             chatBox.appendChild(msgInicial);
 
             // Agregar al historial
             estadoActual.mensajes.push({
                 role: 'assistant',
-                content: `Hola, empecemos con ${PALANCAS[key].nombre}. Mi objetivo es ayudarte a identificar una situación real y llegaremos a una acción concreta. ¿Preparado?`
+                content: mensajeInicial.replace(/<[^>]*>/g, '') // Remover HTML para el historial
             });
 
             // Obtener primera pregunta del coach
@@ -491,25 +703,43 @@
         async function obtenerRespuestaCoach(mensajeUsuario) {
             try {
                 document.getElementById('btn-enviar').disabled = true;
+                const chatBox = document.getElementById('chat-messages');
 
-                const respuesta = await fetch('/api/chat', {
+                // Construir payload
+                const payload = {
+                    palanca: estadoActual.palancaSeleccionada,
+                    mensajes: estadoActual.mensajes,
+                    conteoMensajes: estadoActual.conteoMensajes
+                };
+
+                console.log('Enviando request:', payload);
+
+                // Intentar con rutas alternativas
+                let endpoint = '/api/chat';
+                let respuesta = await fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        palanca: estadoActual.palancaSeleccionada,
-                        mensajes: estadoActual.mensajes,
-                        conteoMensajes: estadoActual.conteoMensajes
-                    })
+                    body: JSON.stringify(payload)
+                }).catch(err => {
+                    console.error('Error en fetch:', err);
+                    throw err;
                 });
 
                 if (!respuesta.ok) {
-                    throw new Error(`Error: ${respuesta.status}`);
+                    const errorText = await respuesta.text();
+                    console.error(`HTTP ${respuesta.status}:`, errorText);
+                    
+                    if (respuesta.status === 404) {
+                        throw new Error('Endpoint /api/chat no encontrado. Verifica que la Vercel Function esté deployada correctamente.');
+                    }
+                    throw new Error(`Error HTTP ${respuesta.status}`);
                 }
 
                 const datos = await respuesta.json();
+                console.log('Respuesta recibida:', datos);
 
                 if (datos.error) {
-                    mostrarError(datos.error);
+                    mostrarError(`Error del servidor: ${datos.error}\n${datos.details || ''}`);
                     document.getElementById('btn-enviar').disabled = false;
                     return;
                 }
@@ -521,7 +751,6 @@
                 });
 
                 // Mostrar respuesta
-                const chatBox = document.getElementById('chat-messages');
                 const msgCoach = document.createElement('div');
                 msgCoach.className = 'message assistant';
                 msgCoach.innerHTML = `<div class="message-content">${datos.respuesta}</div>`;
@@ -529,8 +758,18 @@
 
                 chatBox.scrollTop = chatBox.scrollHeight;
 
-                // Si es la última iteración, mostrar resumen
-                if (datos.finalizador && datos.conteoMensajes >= 6) {
+                // Detectar finalizador en la respuesta
+                const esFinalizador = datos.respuesta.includes('COMPROMISO:') || datos.respuesta.includes('RECOMENDACIÓN:');
+                
+                // Si recomienda una palanca (flujo test), cambiar automáticamente
+                if (estadoActual.palancaSeleccionada === 'test' && datos.respuesta.includes('RECOMENDACIÓN:')) {
+                    // Esperar y luego mostrar resumen
+                    setTimeout(() => {
+                        mostrarResumen();
+                    }, 2000);
+                }
+                // Si es compromiso final, mostrar resumen
+                else if (esFinalizador && estadoActual.conteoMensajes >= 5) {
                     setTimeout(() => {
                         mostrarResumen();
                     }, 1500);
@@ -540,8 +779,8 @@
                 document.getElementById('input-texto').focus();
 
             } catch (error) {
-                mostrarError('Error de conexión. Intenta nuevamente.');
-                console.error(error);
+                console.error('Error completo:', error);
+                mostrarError(`⚠️ Error: ${error.message}\n\nVerifica que:\n1. Tu CLAUDE_API_KEY esté en Vercel\n2. La Vercel Function esté deployada\n3. Espera 1-2 min después de agregar variables`);
                 document.getElementById('btn-enviar').disabled = false;
             }
         }
@@ -561,12 +800,30 @@
             document.getElementById('screen-chat').classList.remove('active');
             document.getElementById('screen-summary').classList.add('active');
 
-            const palanca = PALANCAS[estadoActual.palancaSeleccionada];
-            document.getElementById('summary-text').innerHTML = `
-                Hemos explorado <strong>${palanca.nombre}</strong> contigo y llegamos a acciones concretas.
-                <br><br>
-                Recuerda: el objetivo es implementar lo que decidimos en tu día a día.
-            `;
+            let nombrePalanca = estadoActual.palancaSeleccionada;
+            
+            if (estadoActual.palancaSeleccionada === 'test') {
+                document.getElementById('summary-text').innerHTML = `
+                    ¡Listo! Ahora que sabes por dónde partir, puedes hacer otro coaching con la palanca indicada.
+                    <br><br>
+                    Recuerda: el objetivo es implementar las acciones concretas en tu día a día.
+                `;
+            } else {
+                // Encontrar el nombre de la palanca
+                for (const grupo of Object.values(GRUPOS_PALANCAS)) {
+                    const palanca = grupo.palancas.find(p => p.id === estadoActual.palancaSeleccionada);
+                    if (palanca) {
+                        nombrePalanca = palanca.nombre;
+                        break;
+                    }
+                }
+                
+                document.getElementById('summary-text').innerHTML = `
+                    Hemos explorado <strong>${nombrePalanca}</strong> contigo y llegamos a acciones concretas.
+                    <br><br>
+                    Recuerda: el objetivo es implementar lo que decidimos en tu día a día.
+                `;
+            }
         }
 
         // VOLVER AL INICIO
